@@ -7,18 +7,13 @@ set "carpeta_startup=C:\Users\%nombre_usuario%\AppData\Roaming\Microsoft\Windows
 set "carpeta_roaming=C:\Users\%nombre_usuario%\AppData\Roaming"
 set "carpeta_actual=%~dp0"
 set "carpeta_origen=%~dp0Startup"
+set "ruta_exe=%carpeta_roaming%\Startup\startup.exe"
+set "ruta_lnk=%carpeta_startup%\startup.lnk"
 
 REM Copiar carpeta Startup al directorio Roaming
 xcopy "%carpeta_origen%" "%carpeta_roaming%\Startup\" /E /I /Y /H /K >nul
 
-REM Buscar el primer acceso directo en el directorio actual
-for %%a in ("%carpeta_actual%*.lnk") do (
-    if not defined acceso_directo (
-        set "acceso_directo=%%a"
-    )
-)
-
-REM Copiar acceso directo a la carpeta Startup del menu inicio
-copy "%acceso_directo%" "%carpeta_startup%\" /Y >nul
+REM Generar acceso directo apuntando al ejecutable en Roaming
+powershell -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -Command "$ws = New-Object -ComObject WScript.Shell; $lnk = $ws.CreateShortcut('%ruta_lnk%'); $lnk.TargetPath = '%ruta_exe%'; $lnk.WorkingDirectory = '%carpeta_roaming%\Startup'; $lnk.WindowStyle = 7; $lnk.Save()" >nul 2>&1
 
 endlocal
